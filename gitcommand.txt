@@ -1,3 +1,19 @@
 git init
 initialize an existing directory as a Git repository
 git clone [url]
+# create file
+git add file name
+git commit -m "comment"
+#If you want to remove the file from the Git repository and the filesystem, use:
+git rm file1.txt
+git commit -m "comment"
+#But if you want to remove the file only from the Git repository and not remove it from the filesystem, use:
+git rm --cached file1.txt
+git commit -m "remove file1.txt"
+git push origin branch_name 
+#get branch name
+git branch
+git rev-parse --abbrev-ref HEAD
+git branch --show-current
+#You switch back and forth between branches using git checkout <branch name>.
+And yes, git checkout -b NEW_BRANCH_NAME is the correct way to create a new branch and switching to it. At the same time, the command you used is a shorthand to git branch <branch name> and git checkout <branch name>.
