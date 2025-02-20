@@ -1,0 +1,42 @@
+#Installation:
+sudo apt update
+# Update package list
+sudo apt install mysql-server
+#Verify Installation and Check Status:
+sudo systemctl status mysql
+
+#This command shows the status of the MySQL service.  It should be active (running).  If it's not, you can start it with:
+sudo systemctl start mysql
+
+#And enable it to start on boot:
+sudo systemctl enable mysql
+
+#Secure the MySQL Installation (Important):
+sudo mysql_secure_installation
+#Log in to MySQL:
+sudo mysql -u root -p
+#Create a New User (Recommended):
+CREATE USER 'newuser'@'localhost' IDENTIFIED BY 'newpassword';  # Replace with a strong password
+GRANT ALL PRIVILEGES ON *.* TO 'newuser'@'localhost';  # Grant all privileges (adjust as needed)
+FLUSH PRIVILEGES;  # Apply the changes
+
+# Replace 'newuser' with the desired username.
+# Replace 'newpassword' with a strong password.
+#GRANT ALL PRIVILEGES gives the user full access. You can restrict privileges if needed (e.g., SELECT, INSERT, UPDATE, DELETE on specific databases).
+#FLUSH PRIVILEGES is essential; it tells MySQL to reload the grant tables.
+# Create a Database:
+CREATE DATABASE mydatabase; # Replace with your database name
+# Test the Connection (using the new user):
+#Exit the MySQL root session:
+exit;
+#Now, try logging in with the new user:
+mysql -u newuser -p
+#You should be able to log in using the password you set for the new user.
+#Test Database Access:
+#Once logged in as the new user, try accessing the database you created:
+USE mydatabase;
+
+#This selects the mydatabase database.  You can then create tables and perform other operations within it.  For example:
+CREATE TABLE mytable (id INT, name VARCHAR(255));
+INSERT INTO mytable (id, name) VALUES (1, 'Test');
+SELECT * FROM mytable;
