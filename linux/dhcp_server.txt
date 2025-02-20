@@ -1,0 +1,43 @@
+#Install the DHCP Server Package:
+sudo apt update
+sudo apt install isc-dhcp-server
+#Configure the DHCP Server:
+#The main configuration file is /etc/dhcp/dhcpd.conf. It's crucial to understand the structure of this file.
+#Edit the configuration file:
+sudo nano /etc/dhcp/dhcpd.conf
+#Define Subnets and Ranges: You'll define subnets and IP address ranges to be assigned. Here's a basic example:
+subnet 192.168.1.0 netmask 255.255.255.0 { # Replace with your network
+range 192.168.1.100 192.168.1.200; # IP address range to assign
+option routers 192.168.1.1; # Default gateway (your router's IP)
+option domain-name-servers 8.8.8.8, 8.8.4.4; # DNS servers (Google Public DNS)
+default-lease-time 86400; # Default lease time (in seconds)
+max-lease-time 7200; # Maximum lease time
+}
+#- Explanation:
+#    - subnet 192.168.1.0 netmask 255.255.255.0: Defines the subnet. Replace these with your actual network address and subnet mask.
+#    - range 192.168.1.100 192.168.1.200: Specifies the range of IP addresses to assign. Adjust as needed.
+#    - option routers 192.168.1.1: Sets the default gateway. Replace with your router's IP address.
+#    - option domain-name-servers 8.8.8.8, 8.8.4.4: Specifies DNS servers. You can use Google's public DNS or your own DNS server.
+#    - default-lease-time and max-lease-time: Control how long a device can keep an assigned IP address.
+#- Static Leases (Optional): If you want to assign specific IP addresses to certain devices (based on their MAC address), you can use static leases:
+#host client1 {
+#hardware ethernet xx:xx:xx:xx:xx:xx; # Replace with the client's MAC address
+#fixed-address 192.168.1.10; # The IP address to assign
+#}
+#1. Configure the DHCP Server Interface:
+#- Edit the /etc/default/isc-dhcp-server file:
+sudo nano /etc/default/isc-dhcp-server
+#- Find the line INTERFACESv4="" and replace it with the name of the network interface the DHCP server should listen on. For example, if your interface is eth0 or enp0s3, change it to:
+#INTERFACESv4="eth0" # Or INTERFACESv4="enp0s3"
+# Restart the DHCP Server:
+sudo systemctl restart isc-dhcp-server
+# Verify the DHCP Server:
+#- Check the DHCP server logs for any errors:
+sudo tail -f /var/log/syslog # or /var/log/messages
+#You can also check the status of the service:
+sudo systemctl status isc-dhcp-server
+#Testing the DHCP Server:
+#On a Client Machine (Linux): If you have a Linux client, you can use the following command to request a DHCP address:
+sudo dhclient <interface_name> (e.g., sudo dhclient eth0)
+# On a Client Machine (Windows): Usually, Windows clients will automatically try to obtain a DHCP address. You can release and renew the IP address in the network connection settings.
+# Check the assigned IP address: On the client machine, check the assigned IP address, subnet mask, default gateway, and DNS server addresses using the appropriate commands for your OS (e.g., ip addr on Linux, ipconfig on Windows).
