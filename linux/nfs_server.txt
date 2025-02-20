@@ -1,0 +1,60 @@
+#Install NFS Packages:
+#On the Server (the machine sharing the files):
+sudo apt update
+sudo apt install nfs-kernel-server
+
+#On the Client (the machine accessing the shared files):
+sudo apt update
+sudo apt install nfs-common
+
+#Configure the NFS Export (Server):
+#Edit /etc/exports: This file specifies which directories are shared and what permissions clients have.
+sudo vim /etc/exports
+# Add an entry for the directory you want to share. The format is:
+/path/to/shared/directory client1 client2(options)
+- /path/to/shared/directory: The absolute path of the directory you want to share.
+- client1 client2: Specify the clients that are allowed to access the share. You can use:
+- Hostnames: [client1.example.com](http://client1.example.com/)
+- IP addresses: 192.168.1.100
+- Network ranges: 192.168.1.0/24 (all hosts on this subnet)
+- Wildcards: * (all hosts - use with extreme caution!)
+- (options): Permissions and other settings. Common options include:
+- ro: Read-only access.
+- rw: Read and write access.
+- no_root_squash: Allows the root user on the client to have root privileges on the shared directory (use with caution!).
+- sync: Ensures that changes are written to disk before replying to the client.
+- async: Allows the server to write changes to disk later (can improve performance but may lead to data loss in case of a crash).
+- secure: Requires secure RPC (Remote Procedure Call) for communication.
+- anonuid=UID and anongid=GID: Sets the user and group ID for anonymous users.
+#Example: To share /var/www/html with read/write access to all hosts on the 192.168.1.0/24 network and with the anonymous user mapped to UID 1000 and GID 1000:
+#/var/www/html 192.168.1.0/24(rw,sync,no_root_squash,anonuid=1000,anongid=1000)
+#- Export the share:
+sudo exportfs -ra
+
+#The -r option re-exports all shares, and the -a option exports all shares listed in /etc/exports.
+#Configure the NFS Client:
+
+#Create a mount point: This is the directory on the client where the shared files will be accessible.
+sudo mkdir /mnt/my_nfs_share # Choose a descriptive name
+#Mount the NFS share:
+sudo mount <server_ip_or_hostname>:/path/to/shared/directory /mnt/my_nfs_share
+- <server_ip_or_hostname>: The IP address or hostname of the NFS server.
+- /path/to/shared/directory: The path to the shared directory on the server (exactly as it appears in /etc/exports).
+- /mnt/my_nfs_share: The mount point on the client.
+Example:
+sudo mount 192.168.1.100:/var/www/html /mnt/my_nfs_share
+- Make the mount persistent (optional): To automatically mount the share on boot, add an entry to /etc/fstab on the client:
+sudo vi /etc/fstab
+
+Add a line like this:
+<server_ip_or_hostname>:/path/to/shared/directory /mnt/my_nfs_share nfs defaults 0 0
+
+Example:
+192.168.1.100:/var/www/html /mnt/my_nfs_share nfs defaults 0 0
+
+1. Testing:
+- On the Client:
+    - Navigate to the mount point (/mnt/my_nfs_share in our example) and verify that you can access the files shared from the server.
+    - Try creating a new file (if you have write permissions).
+- On the Server:
+    - Check that the files created on the client are visible on the server in the original shared directory.
