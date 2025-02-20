@@ -1,0 +1,6 @@
+knowing all package install
+dpkg -l
+dpkg -L <package_name>
+uninstall package
+sudo apt purge <package_name>
+sudo apt remove <package_name>
