@@ -1,0 +1,82 @@
+#Install Bind9:
+sudo apt update
+sudo apt install bind9
+#Configure Bind9:
+#Edit the main Bind configuration file:
+sudo vi /etc/bind/named.conf.options
+#Make the following changes (or similar):
+options {
+directory "/var/cache/bind";
+    
+    ```
+     // Forward queries to public DNS servers if not found locally
+     forwarders {
+             8.8.8.8;       // Google Public DNS
+             8.8.4.4;       // Google Public DNS (secondary)
+             1.1.1.1;       // Cloudflare DNS (alternative)
+             1.0.0.1;       // Cloudflare DNS (alternative)
+     };
+    
+     // Listen only on the local network interfaces
+     listen-on { any; }; // or specify your network interface like { 192.168.1.0/24; };
+    
+     // Allow queries from your local network
+     allow-query { any; }; // or specify your network like { 192.168.1.0/24; };
+    
+     // Optional: Disable recursion if you don't want to act as a recursive resolver
+     // recursion no;  // Only enable if you are not using forwarders
+    
+     dnssec-validation auto; // Enable DNSSEC validation
+    
+    ```
+    
+
+};
+
+#Edit the local zone file (for reverse lookups):
+sudo nano /etc/bind/named.conf.local
+#Add the following zone definition (replace your_network with your network address):
+zone "your_network.in-addr.arpa" IN {
+type master;
+file "/etc/bind/db.your_network"; // Create this file in the next step
+};
+#Create the reverse lookup zone file:
+sudo nano /etc/bind/db.your_network
+#Add the following content (adjust as needed):
+$TTL 604800
+@ IN SOA [ns1.yourdomain.com](http://ns1.yourdomain.com/). [admin.yourdomain.com](http://admin.yourdomain.com/). (
+2 ; Serial
+604800 ; Refresh
+86400 ; Retry
+2419200 ; Expire
+604800 ) ; Negative Cache TTL
+;
+@ IN NS [ns1.yourdomain.com](http://ns1.yourdomain.com/).
+;
+; Example: Reverse lookup for 192.168.1.10
+10 IN PTR [mycomputer.yourdomain.com](http://mycomputer.yourdomain.com/).
+#Edit the named.conf.default-zones file:
+sudo nano /etc/bind/named.conf.default-zones
+#Add or uncomment the following zone definition:
+zone "." IN {
+type hint;
+file "/etc/bind/db.root";
+};
+#Check Configuration Syntax:
+sudo named-checkconf
+
+#If there are no errors, proceed.
+# Restart Bind9:
+sudo systemctl restart bind9
+
+#Test DNS Resolution:
+#Using dig (command-line tool):
+dig [google.com](http://google.com/) @localhost
+dig -x 8.8.8.8 @localhost // Reverse lookup
+#Using nslookup (command-line tool):
+nslookup [google.com](http://google.com/) localhost
+nslookup 8.8.8.8 localhost // Reverse lookup
+#Edit /etc/resolv.conf (on the client machine):
+sudo nano /etc/resolv.conf
+#Add or modify the nameserver line to point to your DNS server:
+nameserver your_server_ip_address
